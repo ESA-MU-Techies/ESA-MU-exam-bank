@@ -1,0 +1,110 @@
+import { Header } from "@/components/header"
+import { Footer } from "@/components/footer"
+import { ExamFilters } from "@/components/exam-filters"
+import { ExamCard } from "@/components/exam-card"
+import { createClient } from "@/lib/supabase/server"
+import { Suspense } from "react"
+
+async function ExamsList({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
+  const params = await searchParams
+  const supabase = await createClient()
+
+  // Fetch filter options in parallel
+  const [{ data: departments }, { data: years }, { data: examTypes }] = await Promise.all([
+    supabase.from("departments").select("*"),
+    supabase.from("years").select("*").order("year_number"),
+    supabase.from("exam_types").select("*"),
+  ])
+
+  // Build optimized query with all filters applied at database level
+  let query = supabase.from("exams").select("*")
+
+  // Apply department filter
+  if (params.department) {
+    const dept = departments?.find((d) => d.code === params.department)
+    if (dept) query = query.eq("department_id", dept.id)
+  }
+
+  // Apply exam type filter
+  if (params.examType) {
+    query = query.eq("exam_type_id", params.examType)
+  }
+
+  const { data: exams } = await query.order("uploaded_at", { ascending: false })
+
+  // Enrich exams with related data only if needed
+  let enrichedExams = exams || []
+  if (enrichedExams.length > 0) {
+    const { data: semesters } = await supabase.from("semesters").select("*")
+    const { data: allYears } = await supabase.from("years").select("*")
+
+    enrichedExams = enrichedExams.map((exam) => ({
+      ...exam,
+      department: departments?.find((d) => d.id === exam.department_id),
+      semester: semesters?.find((s) => s.id === exam.semester_id),
+      exam_type: examTypes?.find((et) => et.id === exam.exam_type_id),
+    }))
+
+    if (params.year) {
+      enrichedExams = enrichedExams.filter((exam) => exam.semester?.year_id === params.year)
+    }
+
+    if (params.semester) {
+      enrichedExams = enrichedExams.filter(
+        (exam) => exam.semester?.semester_number === Number.parseInt(params.semester),
+      )
+    }
+  }
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <ExamFilters departments={departments || []} years={years || []} examTypes={examTypes || []} />
+
+      <div className="mt-8">
+        <h2 className="text-2xl font-bold text-primary mb-6">
+          {enrichedExams && enrichedExams.length > 0
+            ? `Found ${enrichedExams.length} Exam${enrichedExams.length !== 1 ? "s" : ""}`
+            : "No Exams Found"}
+        </h2>
+
+        {enrichedExams && enrichedExams.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {enrichedExams.map((exam) => (
+              <ExamCard key={exam.id} exam={exam} />
+            ))}
+          </div>
+        ) : (
+          <div className="bg-accent-light p-8 rounded-lg text-center">
+            <p className="text-foreground mb-4">No exam papers found matching your filters.</p>
+            <p className="text-muted-foreground">Try adjusting your search criteria or browse all exams.</p>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+export default async function BrowsePage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string>>
+}) {
+  return (
+    <div className="min-h-screen flex flex-col bg-background">
+      <Header />
+      <main className="flex-1">
+        <section className="bg-primary text-white py-8 px-4">
+          <div className="max-w-7xl mx-auto">
+            <h1 className="text-3xl font-bold">Browse Exam Papers</h1>
+            <p className="text-accent-light mt-2">Filter and download past examination papers</p>
+          </div>
+        </section>
+
+        <Suspense fallback={<div className="text-center py-12">Loading exams...</div>}>
+          <ExamsList searchParams={searchParams} />
+        </Suspense>
+      </main>
+      <Footer />
+    </div>
+  )
+}
