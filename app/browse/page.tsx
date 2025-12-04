@@ -2,63 +2,41 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { ExamFilters } from "@/components/exam-filters"
 import { ExamCard } from "@/components/exam-card"
-import { createClient } from "@/lib/supabase/server"
+import { fetchDepartments, fetchYears, fetchExamTypes, fetchExams } from "@/lib/db"
 import { Suspense } from "react"
 
 async function ExamsList({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
   const params = await searchParams
-  const supabase = await createClient()
 
   // Fetch filter options in parallel
-  const [{ data: departments }, { data: years }, { data: examTypes }] = await Promise.all([
-    supabase.from("departments").select("*"),
-    supabase.from("years").select("*").order("year_number"),
-    supabase.from("exam_types").select("*"),
+  const [departments, years, examTypes] = await Promise.all([
+    fetchDepartments(),
+    fetchYears(),
+    fetchExamTypes(),
   ])
 
-  // Build optimized query with all filters applied at database level
-  let query = supabase.from("exams").select("*")
+  // Build filter object for database query
+  const filters: { department_id?: string; year_id?: string; semester_id?: string; exam_type_id?: string } = {}
 
   // Apply department filter
   if (params.department) {
-    const dept = departments?.find((d) => d.code === params.department)
-    if (dept) query = query.eq("department_id", dept.id)
+    const dept = departments.find((d) => d.code === params.department)
+    if (dept) filters.department_id = dept.id
   }
 
   // Apply exam type filter
   if (params.examType) {
-    query = query.eq("exam_type_id", params.examType)
+    filters.exam_type_id = params.examType
   }
 
-  const { data: exams } = await query.order("uploaded_at", { ascending: false })
+  const exams = await fetchExams(filters)
 
-  // Enrich exams with related data only if needed
-  let enrichedExams = exams || []
-  if (enrichedExams.length > 0) {
-    const { data: semesters } = await supabase.from("semesters").select("*")
-    const { data: allYears } = await supabase.from("years").select("*")
-
-    enrichedExams = enrichedExams.map((exam) => ({
-      ...exam,
-      department: departments?.find((d) => d.id === exam.department_id),
-      semester: semesters?.find((s) => s.id === exam.semester_id),
-      exam_type: examTypes?.find((et) => et.id === exam.exam_type_id),
-    }))
-
-    if (params.year) {
-      enrichedExams = enrichedExams.filter((exam) => exam.semester?.year_id === params.year)
-    }
-
-    if (params.semester) {
-      enrichedExams = enrichedExams.filter(
-        (exam) => exam.semester?.semester_number === Number.parseInt(params.semester),
-      )
-    }
-  }
+  // Exams already denormalized from Neon with all related data joined
+  const enrichedExams = exams
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <ExamFilters departments={departments || []} years={years || []} examTypes={examTypes || []} />
+      <ExamFilters departments={departments} years={years} examTypes={examTypes} />
 
       <div className="mt-8">
         <h2 className="text-2xl font-bold text-primary mb-6">

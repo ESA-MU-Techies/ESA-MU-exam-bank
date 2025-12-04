@@ -1,16 +1,14 @@
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { UploadForm } from "@/components/upload-form"
-import { createClient } from "@/lib/supabase/server"
+import { fetchDepartments, fetchYears, fetchSemesters, fetchExamTypes } from "@/lib/db"
 
 export default async function UploadPage() {
-  const supabase = await createClient()
-
-  const [{ data: departments }, { data: years }, { data: semesters }, { data: examTypes }] = await Promise.all([
-    supabase.from("departments").select("*"),
-    supabase.from("years").select("*").order("year_number"),
-    supabase.from("semesters").select("*"),
-    supabase.from("exam_types").select("*"),
+  const [departments, years, semesters, examTypes] = await Promise.all([
+    fetchDepartments(),
+    fetchYears(),
+    fetchSemesters(),
+    fetchExamTypes(),
   ])
 
   return (
@@ -28,10 +26,10 @@ export default async function UploadPage() {
         <section className="py-12 px-4">
           <div className="max-w-2xl mx-auto">
             <UploadForm
-              departments={departments || []}
-              years={years || []}
-              semesters={semesters || []}
-              examTypes={examTypes || []}
+              departments={departments}
+              years={years}
+              semesters={semesters}
+              examTypes={examTypes}
             />
 
             <div className="mt-12 bg-accent-light p-8 rounded-lg">
