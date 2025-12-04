@@ -233,16 +233,32 @@ export async function insertExam(examData: {
     let semester_id = examData.semester_id
     if (!semester_id) {
       try {
+        // Preferred: match year + semester 1
         const semesterResult = await sql`
-          SELECT id FROM semesters 
-          WHERE year_id = ${examData.year_id} AND semester_number = 1
+          SELECT id FROM semesters
+          WHERE semester_number = 1 AND year_id = ${examData.year_id}
           LIMIT 1
         `
         if (semesterResult && semesterResult.length > 0) {
           semester_id = (semesterResult[0] as { id: string }).id
         }
       } catch (err) {
-        console.error("Error fetching default semester:", err)
+        console.warn("Year-specific semester lookup failed; trying global fallback", err)
+      }
+
+      // Fallback: pick the first semester in the table (any year) to keep demo uploads working
+      if (!semester_id) {
+        try {
+          const fallback = await sql`SELECT id FROM semesters ORDER BY created_at ASC LIMIT 1`
+          if (fallback && fallback.length > 0) {
+            semester_id = (fallback[0] as { id: string }).id
+          }
+        } catch (err) {
+          console.error("Error fetching fallback semester:", err)
+        }
+      }
+
+      if (!semester_id) {
         throw new Error("Cannot determine semester for exam")
       }
     }
