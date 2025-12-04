@@ -2,15 +2,16 @@
 
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import type { Department, Year, ExamType } from "@/lib/types"
+import type { Department, Year, Semester, ExamType } from "@/lib/types"
 
 interface ExamFiltersProps {
   departments: Department[]
   years: Year[]
+  semesters: Semester[]
   examTypes: ExamType[]
 }
 
-export function ExamFilters({ departments, years, examTypes }: ExamFiltersProps) {
+export function ExamFilters({ departments, years, semesters, examTypes }: ExamFiltersProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -86,11 +87,17 @@ export function ExamFilters({ departments, years, examTypes }: ExamFiltersProps)
           <select
             value={selectedSemester}
             onChange={(e) => setSelectedSemester(e.target.value)}
-            className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+            disabled={!selectedYear}
+            className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
           >
             <option value="">All Semesters</option>
-            <option value="1">Semester 1</option>
-            <option value="2">Semester 2</option>
+            {selectedYear && semesters
+              .filter((s) => s.year_id === selectedYear)
+              .map((sem) => (
+                <option key={sem.id} value={sem.semester_number}>
+                  Semester {sem.semester_number}
+                </option>
+              ))}
           </select>
         </div>
 

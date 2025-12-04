@@ -2,26 +2,40 @@ import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
 import { ExamFilters } from "@/components/exam-filters"
 import { ExamCard } from "@/components/exam-card"
-import { fetchDepartments, fetchYears, fetchExamTypes, fetchExams } from "@/lib/db"
+import { fetchDepartments, fetchYears, fetchSemesters, fetchExamTypes, fetchExams } from "@/lib/db"
 import { Suspense } from "react"
 
 async function ExamsList({ searchParams }: { searchParams: Promise<Record<string, string>> }) {
   const params = await searchParams
 
   // Fetch filter options in parallel
-  const [departments, years, examTypes] = await Promise.all([
+  const [departments, years, semesters, examTypes] = await Promise.all([
     fetchDepartments(),
     fetchYears(),
+    fetchSemesters(),
     fetchExamTypes(),
   ])
 
   // Build filter object for database query
-  const filters: { department_id?: string; year_id?: string; semester_id?: string; exam_type_id?: string } = {}
+  const filters: { department_id?: string; semester_id?: string; exam_type_id?: string } = {}
 
   // Apply department filter
   if (params.department) {
     const dept = departments.find((d) => d.code === params.department)
     if (dept) filters.department_id = dept.id
+  }
+
+  // Apply year and semester filters
+  if (params.year && params.semester) {
+    const year = years.find((y) => y.id === params.year)
+    if (year) {
+      const semester = semesters.find(
+        (s) => s.year_id === year.id && s.semester_number === Number.parseInt(params.semester)
+      )
+      if (semester) {
+        filters.semester_id = semester.id
+      }
+    }
   }
 
   // Apply exam type filter
@@ -36,7 +50,7 @@ async function ExamsList({ searchParams }: { searchParams: Promise<Record<string
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <ExamFilters departments={departments} years={years} examTypes={examTypes} />
+      <ExamFilters departments={departments} years={years} semesters={semesters} examTypes={examTypes} />
 
       <div className="mt-8">
         <h2 className="text-2xl font-bold text-primary mb-6">

@@ -95,6 +95,7 @@ export function UploadForm({ departments, years, semesters, examTypes }: UploadF
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           department_id: formData.department,
+          year_id: formData.year,
           semester_id: formData.semester,
           exam_type_id: formData.examType,
           course_name: formData.courseName,
