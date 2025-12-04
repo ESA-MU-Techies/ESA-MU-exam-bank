@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     } = body
 
     // Validate required fields
-    if (!department_id || !year_id || !semester_id || !exam_type_id || !course_name || !course_code || !file_url) {
+      if (!department_id || !year_id || !exam_type_id || !course_name || !course_code || !file_url) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 

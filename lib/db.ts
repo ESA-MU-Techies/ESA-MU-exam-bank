@@ -218,7 +218,7 @@ export async function fetchExams(filters?: {
 export async function insertExam(examData: {
   department_id: string
   year_id: string
-  semester_id: string
+  semester_id?: string
   exam_type_id: string
   course_name: string
   course_code: string
@@ -229,6 +229,24 @@ export async function insertExam(examData: {
   uploaded_by: string
 }): Promise<Exam | null> {
   try {
+    // If semester_id not provided, fetch the first semester for the year
+    let semester_id = examData.semester_id
+    if (!semester_id) {
+      try {
+        const semesterResult = await sql`
+          SELECT id FROM semesters 
+          WHERE year_id = ${examData.year_id} AND semester_number = 1
+          LIMIT 1
+        `
+        if (semesterResult && semesterResult.length > 0) {
+          semester_id = (semesterResult[0] as { id: string }).id
+        }
+      } catch (err) {
+        console.error("Error fetching default semester:", err)
+        throw new Error("Cannot determine semester for exam")
+      }
+    }
+
     const result = await sql`
       INSERT INTO exams (
         department_id, year_id, semester_id, exam_type_id,
@@ -237,7 +255,7 @@ export async function insertExam(examData: {
       ) VALUES (
         ${examData.department_id},
         ${examData.year_id},
-        ${examData.semester_id},
+        ${semester_id},
         ${examData.exam_type_id},
         ${examData.course_name},
         ${examData.course_code},

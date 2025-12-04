@@ -56,8 +56,8 @@ export function UploadForm({ departments, years, semesters, examTypes }: UploadF
     setMessage(null)
 
     // Validation
-    if (!formData.department || !formData.year || !formData.semester || !formData.examType) {
-      setMessage({ type: "error", text: "Please fill in all filter fields" })
+    if (!formData.department || !formData.year || !formData.examType) {
+      setMessage({ type: "error", text: "Please fill in department, year, and exam type" })
       return
     }
 
@@ -203,17 +203,16 @@ export function UploadForm({ departments, years, semesters, examTypes }: UploadF
           {/* Semester */}
           <div>
             <label className="block text-sm font-medium text-foreground mb-2">
-              Semester <span className="text-red-500">*</span>
+              Semester
             </label>
             <select
               name="semester"
               value={formData.semester}
               onChange={handleInputChange}
-              required
               disabled={!formData.year}
               className="w-full px-3 py-2 border border-border rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50"
             >
-              <option value="">Select Semester</option>
+              <option value="">Select Semester (optional)</option>
               {availableSemesters.map((sem) => (
                 <option key={sem.id} value={sem.id}>
                   Semester {sem.semester_number}
