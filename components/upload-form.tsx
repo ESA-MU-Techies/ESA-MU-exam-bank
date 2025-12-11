@@ -138,16 +138,21 @@ export function UploadForm({ departments, years, semesters, examTypes }: UploadF
   }
 
   return (
-    <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-md border border-border">
-      <h2 className="text-2xl font-bold text-primary mb-6">Upload Exam Paper</h2>
+    <form onSubmit={handleSubmit} className="bg-white p-8 rounded-xl shadow-sm border border-border/70">
+      <div className="mb-6">
+        <p className="text-xs uppercase tracking-wide text-muted-foreground">Submit</p>
+        <h2 className="text-2xl font-bold text-primary">Upload Exam Paper</h2>
+        <p className="text-sm text-muted-foreground mt-2">Provide the details below so others can easily find this paper.</p>
+      </div>
 
       {message && (
         <div
           className={`p-4 rounded-md mb-6 ${
             message.type === "success"
-              ? "bg-green-100 text-green-800 border border-green-300"
-              : "bg-red-100 text-red-800 border border-red-300"
+              ? "bg-accent-light/70 text-primary border border-accent/50"
+              : "bg-red-50 text-red-800 border border-red-200"
           }`}
+          role="status"
         >
           {message.text}
         </div>
@@ -177,6 +182,7 @@ export function UploadForm({ departments, years, semesters, examTypes }: UploadF
                 </option>
               ))}
             </select>
+            <p className="text-xs text-muted-foreground mt-1">Choose the department that owns the course.</p>
           </div>
 
           {/* Year */}
@@ -198,6 +204,7 @@ export function UploadForm({ departments, years, semesters, examTypes }: UploadF
                 </option>
               ))}
             </select>
+            <p className="text-xs text-muted-foreground mt-1">Required so we can place the paper in the right cohort.</p>
           </div>
 
           {/* Semester */}
@@ -219,6 +226,7 @@ export function UploadForm({ departments, years, semesters, examTypes }: UploadF
                 </option>
               ))}
             </select>
+            <p className="text-xs text-muted-foreground mt-1">Optional. If omitted, we will associate it automatically.</p>
           </div>
 
           {/* Exam Type */}
@@ -240,6 +248,7 @@ export function UploadForm({ departments, years, semesters, examTypes }: UploadF
                 </option>
               ))}
             </select>
+            <p className="text-xs text-muted-foreground mt-1">Select whether this is CAT, main exam, or supplementary.</p>
           </div>
         </div>
       </div>
@@ -287,12 +296,15 @@ export function UploadForm({ departments, years, semesters, examTypes }: UploadF
       <div className="mb-8 pb-8 border-b border-border">
         <h3 className="text-lg font-bold text-primary mb-4">Upload File</h3>
 
-        <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary transition">
+        <div className="border-2 border-dashed border-border rounded-lg p-8 text-center hover:border-primary transition bg-accent-light/30">
           <input type="file" accept=".pdf" onChange={handleFileChange} className="hidden" id="file-input" />
-          <label htmlFor="file-input" className="cursor-pointer">
-            <div className="text-4xl mb-2">📄</div>
-            <p className="text-foreground font-medium mb-1">{file ? file.name : "Click to upload or drag and drop"}</p>
-            <p className="text-sm text-muted-foreground">PDF files only, max 50MB</p>
+          <label htmlFor="file-input" className="cursor-pointer space-y-2 block">
+            <div className="text-4xl font-bold text-primary" aria-hidden>
+              PDF
+            </div>
+            <p className="text-foreground font-semibold">{file ? file.name : "Click to select a PDF"}</p>
+            <p className="text-sm text-muted-foreground">PDF only - Max 50MB</p>
+            {file && <p className="text-xs text-muted-foreground">Ready to upload</p>}
           </label>
         </div>
       </div>
@@ -314,7 +326,7 @@ export function UploadForm({ departments, years, semesters, examTypes }: UploadF
       <button
         type="submit"
         disabled={isLoading}
-        className="w-full bg-primary text-white py-3 rounded-md hover:bg-primary-dark transition font-bold disabled:opacity-50"
+        className="w-full bg-primary text-white py-3 rounded-lg hover:bg-primary-dark transition font-bold disabled:opacity-50"
       >
         {isLoading ? "Uploading..." : "Upload Exam Paper"}
       </button>

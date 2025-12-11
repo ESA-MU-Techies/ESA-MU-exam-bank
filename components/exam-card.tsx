@@ -47,33 +47,31 @@ export function ExamCard({ exam }: ExamCardProps) {
 
   return (
     <>
-      <div className="bg-white p-6 rounded-lg shadow-md border border-border hover:shadow-lg transition">
-        <div className="flex justify-between items-start mb-4">
-          <div className="flex-1">
-            <h3 className="text-lg font-bold text-primary mb-1">{exam.course_name}</h3>
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-border/70 hover:-translate-y-1 hover:shadow-lg transition-transform">
+        <div className="flex justify-between items-start gap-3 mb-4">
+          <div className="flex-1 space-y-1">
+            <h3 className="text-lg font-bold text-primary leading-tight">{exam.course_name}</h3>
             <p className="text-sm text-muted-foreground">{exam.course_code}</p>
           </div>
-          <span className="bg-accent-light text-primary px-3 py-1 rounded-full text-sm font-medium">
+          <span className="bg-accent-light text-primary px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide">
             {exam.exam_type?.name || "Exam"}
           </span>
         </div>
 
         <div className="grid grid-cols-2 gap-4 mb-4 text-sm">
-          <div>
+          <div className="space-y-1">
             <p className="text-muted-foreground">Department</p>
-            <p className="font-medium text-foreground">{exam.department?.code}</p>
+            <p className="font-semibold text-foreground">{exam.department?.code || "N/A"}</p>
           </div>
-          <div>
-            <p className="text-muted-foreground">Year & Semester</p>
-            <p className="font-medium text-foreground">
-              Year {exam.semester?.year_id ? "N/A" : "N/A"} - Sem {exam.semester?.semester_number}
-            </p>
+          <div className="space-y-1">
+            <p className="text-muted-foreground">Semester</p>
+            <p className="font-semibold text-foreground">Sem {exam.semester?.semester_number ?? "—"}</p>
           </div>
         </div>
 
-        <div className="flex justify-between items-center text-xs text-muted-foreground mb-4 pb-4 border-b border-border">
+        <div className="flex justify-between items-center text-xs text-muted-foreground mb-4 pb-4 border-b border-border/70">
           <span>Uploaded: {uploadDate}</span>
-          <span>Size: {fileSizeMB} MB</span>
+          <span>{fileSizeMB} MB</span>
         </div>
 
         <div className="flex gap-3">

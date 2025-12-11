@@ -43,8 +43,19 @@ export function ExamFilters({ departments, years, semesters, examTypes }: ExamFi
   }
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-md border border-border">
-      <h3 className="text-lg font-bold text-primary mb-4">Filter Exams</h3>
+    <div className="bg-white p-6 rounded-xl shadow-sm border border-border/70">
+      <div className="flex items-center justify-between gap-3 mb-4">
+        <div>
+          <p className="text-xs uppercase tracking-wide text-muted-foreground">Filters</p>
+          <h3 className="text-lg font-bold text-primary">Refine results</h3>
+        </div>
+        <button
+          onClick={handleReset}
+          className="text-sm font-semibold text-primary hover:text-primary-dark underline-offset-4 hover:underline"
+        >
+          Reset
+        </button>
+      </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Department Filter */}
@@ -119,12 +130,6 @@ export function ExamFilters({ departments, years, semesters, examTypes }: ExamFi
         </div>
       </div>
 
-      <button
-        onClick={handleReset}
-        className="mt-4 px-4 py-2 bg-muted text-foreground rounded-md hover:bg-opacity-80 transition text-sm font-medium"
-      >
-        Reset Filters
-      </button>
     </div>
   )
 }
